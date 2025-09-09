@@ -213,17 +213,17 @@ jobs:
             echo "State file found, checking for existing resources..."
             
             # Remove namespace if it exists in state
-            if terraform state list | grep -q "nexaa_namespace.namespace"; then
+            if terraform state list | grep -q "nexaa_namespace.simple-ci"; then
               echo "Namespace resource found in state, removing..."
-              terraform state rm nexaa_namespace.namespace
+              terraform state rm nexaa_namespace.simple-ci
             else
               echo "Namespace resource not found in state, skipping removal"
             fi
             
             # Remove container if it exists in state
-            if terraform state list | grep -q "nexaa_container.container"; then
+            if terraform state list | grep -q "nexaa_container.simple-ci"; then
               echo "Container resource found in state, removing..."
-              terraform state rm nexaa_container.container
+              terraform state rm nexaa_container.simple-ci
             else
               echo "Container resource not found in state, skipping removal"
             fi
@@ -249,7 +249,7 @@ jobs:
           
           # Try to import the container resource
           echo "Attempting to import container resource..."
-          if terraform import nexaa_container.container simple-ci/simple-ci; then
+          if terraform import nexaa_container.simple-ci simple-ci/simple-ci; then
             echo "✅ Container resource imported successfully"
           else
             echo "⚠️  Container resource import failed (resource may not exist remotely)"
