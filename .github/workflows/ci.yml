@@ -239,7 +239,7 @@ jobs:
         run: |
           # Try to import the namespace resource first
           echo "Attempting to import namespace resource..."
-          if terraform import nexaa_namespace.namespace simple-ci; then
+          if terraform import nexaa_namespace.simple-ci simple-ci; then
             echo "✅ Namespace resource imported successfully"
           else
             echo "⚠️  Namespace resource import failed (resource may not exist remotely)"

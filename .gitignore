@@ -14,3 +14,7 @@ logs/
 .DS_Store
 .vscode/
 .idea/
+terraform/terraform.tfvars
+terraform/.terraform*
+terraform/auth.json
+terraform/terraform.tfstate

@@ -1,0 +1,13 @@
+# Example Terraform Variables File
+# Copy this to nexaa.tfvars and fill in your actual values
+
+# Nexaa Cloud Authentication
+nexaa_username = "your-nexaa-username-here"
+nexaa_password = "your-nexaa-password-here"
+
+# Container Image (use specific tag for production)
+container_image = "ghcr.io/nexaa-cloud/simple-ci:main-abc1234"
+
+# Optional overrides
+# namespace_name = "simple-ci"
+# container_name = "simple-ci"
