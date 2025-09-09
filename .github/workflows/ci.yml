@@ -208,9 +208,19 @@ jobs:
       - name: Remove container from terraform.tfstate
         working-directory: ./terraform
         run: |
-          # Check if state file exists and if resource exists in state
+          # Check if state file exists and if resources exist in state
           if [ -f "terraform.tfstate" ]; then
-            echo "State file found, checking for existing container resource..."
+            echo "State file found, checking for existing resources..."
+            
+            # Remove namespace if it exists in state
+            if terraform state list | grep -q "nexaa_namespace.namespace"; then
+              echo "Namespace resource found in state, removing..."
+              terraform state rm nexaa_namespace.namespace
+            else
+              echo "Namespace resource not found in state, skipping removal"
+            fi
+            
+            # Remove container if it exists in state
             if terraform state list | grep -q "nexaa_container.container"; then
               echo "Container resource found in state, removing..."
               terraform state rm nexaa_container.container
@@ -227,7 +237,17 @@ jobs:
       - name: Terraform Import
         working-directory: ./terraform
         run: |
-          # Try to import the container resource, but don't fail if it doesn't exist
+          # Try to import the namespace resource first
+          echo "Attempting to import namespace resource..."
+          if terraform import nexaa_namespace.namespace simple-ci; then
+            echo "✅ Namespace resource imported successfully"
+          else
+            echo "⚠️  Namespace resource import failed (resource may not exist remotely)"
+            echo "This is normal for first deployments or if the namespace was deleted"
+            echo "Terraform will create the resource during apply"
+          fi
+          
+          # Try to import the container resource
           echo "Attempting to import container resource..."
           if terraform import nexaa_container.container simple-ci/simple-ci; then
             echo "✅ Container resource imported successfully"
