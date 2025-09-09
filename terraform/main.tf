@@ -29,18 +29,18 @@ resource "nexaa_container" "simple-ci" {
 
   resources = data.nexaa_container_resources.container_resource.id
 
-  ports = ["80:80"]
+  ports = ["3000"]
 
   ingresses = [
     {
       domain_name = "simple-ci.nexaa.io"
-      port        = 80
+      port        = 3000
       tls         = true
     }
   ]
 
   health_check = {
-    port = 80
+    port = 3000
     path = "/"
   }
 
