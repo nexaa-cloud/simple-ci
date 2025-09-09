@@ -22,7 +22,7 @@ resource "nexaa_namespace" "simple-ci" {
   name        = "simple-ci"
 }
 
-resource "nexaa_container" "container" {
+resource "nexaa_container" "simple-ci" {
   name      = "simple-ci"
   namespace = nexaa_namespace.simple-ci.name
   image     = var.container_image
