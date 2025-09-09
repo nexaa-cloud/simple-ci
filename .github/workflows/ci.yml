@@ -177,7 +177,7 @@ jobs:
 
   terraform:
     runs-on: ubuntu-latest
-    needs: build
+    needs: publish
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -207,14 +207,35 @@ jobs:
 
       - name: Remove container from terraform.tfstate
         working-directory: ./terraform
-        run: terraform state rm nexaa_container.container
+        run: |
+          # Check if state file exists and if resource exists in state
+          if [ -f "terraform.tfstate" ]; then
+            echo "State file found, checking for existing container resource..."
+            if terraform state list | grep -q "nexaa_container.container"; then
+              echo "Container resource found in state, removing..."
+              terraform state rm nexaa_container.container
+            else
+              echo "Container resource not found in state, skipping removal"
+            fi
+          else
+            echo "No state file found, skipping removal"
+          fi
         env:
           TF_VAR_nexaa_username: ${{ secrets.NEXAA_USERNAME }}
           TF_VAR_nexaa_password: ${{ secrets.NEXAA_PASSWORD }}
 
       - name: Terraform Import
         working-directory: ./terraform
-        run: terraform import nexaa_container.container simple-ci/simple-ci
+        run: |
+          # Try to import the container resource, but don't fail if it doesn't exist
+          echo "Attempting to import container resource..."
+          if terraform import nexaa_container.container simple-ci/simple-ci; then
+            echo "✅ Container resource imported successfully"
+          else
+            echo "⚠️  Container resource import failed (resource may not exist remotely)"
+            echo "This is normal for first deployments or if the container was deleted"
+            echo "Terraform will create the resource during apply"
+          fi
         env:
           TF_VAR_nexaa_username: ${{ secrets.NEXAA_USERNAME }}
           TF_VAR_nexaa_password: ${{ secrets.NEXAA_PASSWORD }}
