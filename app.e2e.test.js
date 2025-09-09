@@ -7,7 +7,7 @@ describe('API Tests', () => {
   it('should return Hello World from GET /', async () => {
     const res = await request(baseURL).get('/');
     expect(res.statusCode).toBe(200);
-    expect(res.text).toBe('Hello world!');
+    expect(res.text).toBe('Hello World!');
   });
 
   it('should respond within reasonable time', async () => {
