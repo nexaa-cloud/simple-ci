@@ -231,7 +231,7 @@ jobs:
 
       - name: Terraform Apply
         working-directory: ./terraform
-        run: terraform apply -auto-approv
+        run: terraform apply -auto-approve
         env:
           TF_VAR_nexaa_username: ${{ secrets.NEXAA_USERNAME }}
           TF_VAR_nexaa_password: ${{ secrets.NEXAA_PASSWORD }}
