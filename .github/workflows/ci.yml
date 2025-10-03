@@ -209,9 +209,10 @@ jobs:
           BRANCH_NAME="${{ steps.extract_branch.outputs.branch }}"
           echo "Using state file: simple-ci-${BRANCH_NAME}/terraform.tfstate"
           terraform init \
-            -backend-config="access_key=${{ secrets.S3_ACCESS_KEY }}" \
-            -backend-config="secret_key=${{ secrets.S3_SECRET_KEY }}" \
             -backend-config="key=simple-ci-${BRANCH_NAME}/terraform.tfstate"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_KEY }}
 
       - name: Terraform Validate
         working-directory: ./terraform
@@ -237,3 +238,5 @@ jobs:
           TF_VAR_nexaa_password: ${{ secrets.NEXAA_PASSWORD }}
           TF_VAR_environment: ${{ steps.extract_branch.outputs.branch }}
           TF_VAR_container_image: ${{ needs.build.outputs.image }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_KEY }}

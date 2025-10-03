@@ -21,15 +21,3 @@ variable "environment" {
   type        = string
   default     = "main"
 }
-
-variable "s3_access_key" {
-  description = "S3 backend access key"
-  type        = string
-  sensitive   = true
-}
-
-variable "s3_secret_key" {
-  description = "S3 backend secret key"
-  type        = string
-  sensitive   = true
-}
