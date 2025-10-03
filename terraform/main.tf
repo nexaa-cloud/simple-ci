@@ -6,6 +6,23 @@ terraform {
       version = "0.1.27"
     }
   }
+
+  backend "s3" {
+    bucket = "terraform-bucket"
+    key    = "simple-ci/terraform.tfstate"
+    region = "eu-west-1"
+
+    endpoints = {
+      s3 = "https://101010-rockstar-demo-minio.container.tilaa.cloud"
+    }
+
+    skip_credentials_validation = true
+    skip_metadata_api_check     = true
+    skip_region_validation      = true
+    skip_requesting_account_id  = true
+    use_path_style              = true
+  }
+
 }
 
 provider "nexaa" {
@@ -19,11 +36,11 @@ data "nexaa_container_resources" "container_resource" {
 }
 
 resource "nexaa_namespace" "simple-ci" {
-  name        = "simple-ci"
+  name        = "simple-ci-${var.environment}"
 }
 
 resource "nexaa_container" "simple-ci" {
-  name      = "simple-ci"
+  name      = "simple-ci-${var.environment}"
   namespace = nexaa_namespace.simple-ci.name
   image     = var.container_image
 
@@ -33,7 +50,7 @@ resource "nexaa_container" "simple-ci" {
 
   ingresses = [
     {
-      domain_name = "simple-ci.nexaa.io"
+      domain_name = "simple-ci-${var.environment}.nexaa.io"
       port        = 3000
       tls         = true
     }

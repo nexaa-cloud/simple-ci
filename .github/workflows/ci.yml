@@ -184,81 +184,38 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Cache Terraform state
-        uses: actions/cache@v4
-        with:
-          path: ./terraform/terraform.tfstate
-          key: terraform-state-${{ github.ref }}
-          restore-keys: |
-            terraform-state-
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: latest
 
+      - name: Extract branch name
+        id: extract_branch
+        run: |
+          # Extract branch name from ref (remove refs/heads/ prefix)
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          # For PRs, use the head branch
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BRANCH_NAME="${{ github.head_ref }}"
+          fi
+          # Sanitize branch name (replace / with -)
+          BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/\//-/g')
+          echo "branch=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+          echo "Deploying environment: ${BRANCH_NAME}"
+
       - name: Terraform Init
         working-directory: ./terraform
-        run: terraform init
+        run: |
+          BRANCH_NAME="${{ steps.extract_branch.outputs.branch }}"
+          echo "Using state file: simple-ci-${BRANCH_NAME}/terraform.tfstate"
+          terraform init \
+            -backend-config="access_key=${{ secrets.S3_ACCESS_KEY }}" \
+            -backend-config="secret_key=${{ secrets.S3_SECRET_KEY }}" \
+            -backend-config="key=simple-ci-${BRANCH_NAME}/terraform.tfstate"
 
       - name: Terraform Validate
         working-directory: ./terraform
         run: terraform validate
-
-      - name: Remove container from terraform.tfstate
-        working-directory: ./terraform
-        run: |
-          # Check if state file exists and if resources exist in state
-          if [ -f "terraform.tfstate" ]; then
-            echo "State file found, checking for existing resources..."
-            
-            # Remove namespace if it exists in state
-            if terraform state list | grep -q "nexaa_namespace.simple-ci"; then
-              echo "Namespace resource found in state, removing..."
-              terraform state rm nexaa_namespace.simple-ci
-            else
-              echo "Namespace resource not found in state, skipping removal"
-            fi
-            
-            # Remove container if it exists in state
-            if terraform state list | grep -q "nexaa_container.simple-ci"; then
-              echo "Container resource found in state, removing..."
-              terraform state rm nexaa_container.simple-ci
-            else
-              echo "Container resource not found in state, skipping removal"
-            fi
-          else
-            echo "No state file found, skipping removal"
-          fi
-        env:
-          TF_VAR_nexaa_username: ${{ secrets.NEXAA_USERNAME }}
-          TF_VAR_nexaa_password: ${{ secrets.NEXAA_PASSWORD }}
-
-      - name: Terraform Import
-        working-directory: ./terraform
-        run: |
-          # Try to import the namespace resource first
-          echo "Attempting to import namespace resource..."
-          if terraform import nexaa_namespace.simple-ci simple-ci; then
-            echo "✅ Namespace resource imported successfully"
-          else
-            echo "⚠️  Namespace resource import failed (resource may not exist remotely)"
-            echo "This is normal for first deployments or if the namespace was deleted"
-            echo "Terraform will create the resource during apply"
-          fi
-          
-          # Try to import the container resource
-          echo "Attempting to import container resource..."
-          if terraform import nexaa_container.simple-ci simple-ci/simple-ci; then
-            echo "✅ Container resource imported successfully"
-          else
-            echo "⚠️  Container resource import failed (resource may not exist remotely)"
-            echo "This is normal for first deployments or if the container was deleted"
-            echo "Terraform will create the resource during apply"
-          fi
-        env:
-          TF_VAR_nexaa_username: ${{ secrets.NEXAA_USERNAME }}
-          TF_VAR_nexaa_password: ${{ secrets.NEXAA_PASSWORD }}
 
       - name: Terraform Plan
         working-directory: ./terraform
@@ -266,6 +223,8 @@ jobs:
         env:
           TF_VAR_nexaa_username: ${{ secrets.NEXAA_USERNAME }}
           TF_VAR_nexaa_password: ${{ secrets.NEXAA_PASSWORD }}
+          TF_VAR_environment: ${{ steps.extract_branch.outputs.branch }}
+          TF_VAR_container_image: ${{ needs.build.outputs.image }}
 
       - name: Terraform Apply
         working-directory: ./terraform
@@ -273,4 +232,5 @@ jobs:
         env:
           TF_VAR_nexaa_username: ${{ secrets.NEXAA_USERNAME }}
           TF_VAR_nexaa_password: ${{ secrets.NEXAA_PASSWORD }}
+          TF_VAR_environment: ${{ steps.extract_branch.outputs.branch }}
           TF_VAR_container_image: ${{ needs.build.outputs.image }}
