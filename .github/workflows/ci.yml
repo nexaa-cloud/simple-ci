@@ -217,24 +217,21 @@ jobs:
         working-directory: ./terraform
         run: terraform validate
 
-      - name: Terraform Plan
-        working-directory: ./terraform
-        run: terraform plan \
-          -backend-config="access_key=${{ secrets.S3_ACCESS_KEY }}" \
-          -backend-config="secret_key=${{ secrets.S3_SECRET_KEY }}" \
-          -backend-config="key=simple-ci-${BRANCH_NAME}/terraform.tfstate"
-        env:
-          TF_VAR_nexaa_username: ${{ secrets.NEXAA_USERNAME }}
-          TF_VAR_nexaa_password: ${{ secrets.NEXAA_PASSWORD }}
-          TF_VAR_environment: ${{ steps.extract_branch.outputs.branch }}
-          TF_VAR_container_image: ${{ needs.build.outputs.image }}
+      # - name: Terraform Plan
+      #   working-directory: ./terraform
+      #   run: terraform plan \
+      #     -backend-config="access_key=${{ secrets.S3_ACCESS_KEY }}" \
+      #     -backend-config="secret_key=${{ secrets.S3_SECRET_KEY }}" \
+      #     -backend-config="key=simple-ci-${BRANCH_NAME}/terraform.tfstate"
+      #   env:
+      #     TF_VAR_nexaa_username: ${{ secrets.NEXAA_USERNAME }}
+      #     TF_VAR_nexaa_password: ${{ secrets.NEXAA_PASSWORD }}
+      #     TF_VAR_environment: ${{ steps.extract_branch.outputs.branch }}
+      #     TF_VAR_container_image: ${{ needs.build.outputs.image }}
 
       - name: Terraform Apply
         working-directory: ./terraform
-        run: terraform apply -auto-approve \
-          -backend-config="access_key=${{ secrets.S3_ACCESS_KEY }}" \
-          -backend-config="secret_key=${{ secrets.S3_SECRET_KEY }}" \
-          -backend-config="key=simple-ci-${BRANCH_NAME}/terraform.tfstate"
+        run: terraform apply -auto-approv
         env:
           TF_VAR_nexaa_username: ${{ secrets.NEXAA_USERNAME }}
           TF_VAR_nexaa_password: ${{ secrets.NEXAA_PASSWORD }}
