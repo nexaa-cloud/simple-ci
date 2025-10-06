@@ -13,7 +13,7 @@ terraform {
     region = "eu-west-1"
 
     endpoints = {
-      s3 = "https://101010-rockstar-demo-minio.container.tilaa.cloud"
+      s3 = "https://101010-demo-minio.container.tilaa.cloud"
     }
 
     skip_credentials_validation = true
@@ -22,7 +22,6 @@ terraform {
     skip_requesting_account_id  = true
     use_path_style              = true
   }
-
 }
 
 provider "nexaa" {
