@@ -47,23 +47,12 @@ jobs:
           echo "Generated tag: ${TAG}"
           echo "Generated image: ${IMAGE}"
 
-      - name: Build development image
-        run: docker build --target development -t simple-ci:dev .
-
       - name: Build production image
         run: docker build --target production -t simple-ci:prod .
 
       - name: Save images
         run: |
-          docker save simple-ci:dev | gzip > dev-image.tar.gz
           docker save simple-ci:prod | gzip > prod-image.tar.gz
-
-      - name: Upload dev image artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: dev-image
-          path: dev-image.tar.gz
-          retention-days: 1
 
       - name: Upload prod image artifact
         uses: actions/upload-artifact@v4
